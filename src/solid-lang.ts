@@ -1,8 +1,6 @@
 import { createSignal, createMemo } from "solid-js"
 
 type Params = Record<string, any>
-type Translation = Record<string, string | ((params: Params) => string)>
-type Dictinary = Record<string, Translation>
 
 type Prev = [never, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
   11, 12, 13, 14, 15, 16, 17, 18, 19, 20, ...0[]]
@@ -18,13 +16,14 @@ type Cons<H, T> = T extends readonly any[] ?
   : never;
 
 
-export const createI18nContext = <T extends Dictinary>(dictinary_: T, language_: keyof T) => {
+export const createI18nContext = <T>(dictinary_: T, language_: keyof T) => {
   const [language, setLanguage] = createSignal(language_)
   const [dictinary, setDictinary] = createSignal(dictinary_)
-  const languages = () => Object.keys(dictinary())
+  const languages = () => Object.keys(dictinary() as object) as (keyof T)[]
   const translations = createMemo(() => dictinary()[language()])
 
-  function lookup(object: Record<any, any>, path: string[], defaultValue: any) {
+  function lookup(object: T[keyof T], path: string[], defaultValue: any) {
+    // @ts-ignore
     const value = path.reduce((obj, key) => obj ? obj[key] : undefined, object)
     return value === undefined ? defaultValue : value
   }
